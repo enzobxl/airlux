@@ -1,0 +1,17 @@
+http:
+          routers:
+                    router-box-8123-e45f0178a776.airnet.bzctoons.net:
+                              rule: Host(`box-8123-e45f0178a776.airnet.bzctoons.net`)
+                              service: service-box-8123-e45f0178a776.airnet.bzctoons.net
+                              entrypoints: [websecure]
+                              tls: { certResolver: myresolver }
+                    router-box-9090-e45f0178a776.airnet.bzctoons.net:
+                              rule: Host(`box-9090-e45f0178a776.airnet.bzctoons.net`)
+                              service: service-box-9090-e45f0178a776.airnet.bzctoons.net
+                              entrypoints: [websecure]
+                              tls: { certResolver: myresolver }
+          services:
+                    service-box-8123-e45f0178a776.airnet.bzctoons.net:
+                              loadBalancer: { servers: [{ url: 'http://airnet-php-fpm:10015' }] }
+                    service-box-9090-e45f0178a776.airnet.bzctoons.net:
+                              loadBalancer: { servers: [{ url: 'http://airnet-php-fpm:10016' }] }
