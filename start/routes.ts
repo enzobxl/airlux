@@ -10,6 +10,7 @@
 import router from '@adonisjs/core/services/router'
 import AutoSwagger from 'adonis-autoswagger'
 import swagger from '#config/swagger'
+import RegistersController from '#controllers/registers_controller'
 
 // returns swagger in YAML
 router.get('/swagger', async () => {
@@ -26,3 +27,6 @@ router.get('/', async () => {
     hello: 'world',
   }
 })
+
+// Register routes
+router.get('/register', [RegistersController, 'get'])
