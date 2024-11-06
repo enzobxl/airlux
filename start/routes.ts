@@ -10,7 +10,6 @@
 import router from '@adonisjs/core/services/router'
 import AutoSwagger from 'adonis-autoswagger'
 import swagger from '#config/swagger'
-
 const PingController = () => import('#controllers/ping_controller')
 const RegistersController = () => import('#controllers/registers_controller')
 
