@@ -1,0 +1,18 @@
+services:
+  raspberry1:
+    build: .
+    container_name: raspberry1
+    ports:
+      - "2222:22"
+
+  raspberry2:
+    build: .
+    container_name: raspberry2
+    ports:
+      - "2223:22"
+
+  raspberry3:
+    build: .
+    container_name: raspberry3
+    ports:
+      - "2224:22"
