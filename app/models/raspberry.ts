@@ -22,6 +22,9 @@ export default class Raspberry extends BaseModel {
   @column()
   declare sshKey: string
 
+  @column()
+  declare lastPingAt: DateTime
+
   @hasMany(() => Port)
   declare ports: HasMany<typeof Port>
 
