@@ -12,6 +12,7 @@ import AutoSwagger from 'adonis-autoswagger'
 import swagger from '#config/swagger'
 import Raspberry from '#models/raspberry'
 import Port from '#models/port'
+const RegistersController = () => import('#controllers/registers_controller')
 
 // returns swagger in YAML
 router.get('/swagger', async () => {
@@ -46,3 +47,6 @@ router.get('/test', async () => {
     raspberry,
   }
 })
+
+// Register routes
+router.get('/register', [RegistersController, 'get'])
