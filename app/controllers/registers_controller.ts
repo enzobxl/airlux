@@ -2,10 +2,14 @@ import { HttpContext } from '@adonisjs/core/http'
 import { registerRaspberryValidator } from '#validators/raspberry'
 import Raspberry from '#models/raspberry'
 import Port from '#models/port'
-import PortType from '#models/port_type'
 import { DateTime } from 'luxon'
+import { inject } from '@adonisjs/core'
+import PostService from '#services/port_service'
 
+@inject()
 export default class RegistersController {
+  constructor(protected portService: PostService) {}
+
   /**
    * @postRegister
    * @operationId postRegister
@@ -26,53 +30,31 @@ export default class RegistersController {
       tcpPorts: [],
     }
 
+    // Attempt to find a registered raspberry from the mac address
     let raspberry = await Raspberry.findBy('mac_address', payload.mac)
-    console.log(payload.mac)
 
+    // If no raspberry was found, register it and assign ports
     if (raspberry === null) {
       raspberry = await Raspberry.create({
         macAddress: payload.mac,
         sshKey: payload.key,
       })
 
-      let requestedPortsLength = payload.tcpPorts.length + payload.httpPorts.length
-      let availablePorts = await Port.query()
-        .doesntHave('raspberry')
-        .orderBy('portNumber', 'asc')
-        .limit(requestedPortsLength)
-
-      let tcpPortType = await PortType.findBy('label', 'tcp')
-      let httpPortType = await PortType.findBy('label', 'http')
-
-      // If enough ports are available
-      if (availablePorts.length === requestedPortsLength) {
-        // Slice the available ports into TCP and HTTP sections
-        const tcpPorts = availablePorts.slice(0, payload.tcpPorts.length)
-        const httpPorts = availablePorts.slice(payload.tcpPorts.length)
-
-        // Assign TCP ports
-        tcpPorts.forEach((port) => {
-          port.portTypeId = tcpPortType!.id
-          port.raspberryId = raspberry!.id
-          responsePayload.tcpPorts.push(port.portNumber)
-          port.save()
-        })
-
-        // Assign HTTP ports
-        httpPorts.forEach((port) => {
-          port.portTypeId = httpPortType!.id
-          port.raspberryId = raspberry!.id
-          responsePayload.httpPorts.push(port.portNumber)
-          port.save()
-        })
-      }
+      await this.portService.assignAvailablePorts(
+        raspberry,
+        payload.tcpPorts,
+        payload.httpPorts,
+        responsePayload
+      )
     } else {
+      // Find ports assigned to the raspberry
       let httpPorts = await Port.query()
         .where('raspberryId', raspberry.id)
         .andWhereHas('portType', (query) => {
           query.where('label', 'http')
         })
         .orderBy('portNumber', 'asc')
+
       responsePayload['httpPorts'] = httpPorts.map((item) => item.portNumber)
 
       let tcpPorts = await Port.query()
@@ -83,6 +65,15 @@ export default class RegistersController {
         .orderBy('portNumber', 'asc')
 
       responsePayload['tcpPorts'] = tcpPorts.map((item) => item.portNumber)
+
+      if (httpPorts.length + tcpPorts.length === 0) {
+        await this.portService.assignAvailablePorts(
+          raspberry,
+          payload.tcpPorts,
+          payload.httpPorts,
+          responsePayload
+        )
+      }
     }
 
     // Update last pinged at
