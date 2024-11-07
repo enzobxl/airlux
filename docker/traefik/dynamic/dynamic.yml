@@ -1,7 +1,11 @@
 http:
           routers:
                     router-box-8123-e45f0178a776.airnet.bzctoons.net:
+<<<<<<< HEAD
                               rule: Host(`box-8123-e45f0178a776.airnet.bzctoons.net`)
+=======
+                              rule: Host(`box-1111-e45f0178a776.airnet.bzctoons.net`)
+>>>>>>> 2d17164c57cc2718ecceea46d3ae41f755de1387
                               service: service-box-8123-e45f0178a776.airnet.bzctoons.net
                               entrypoints: [websecure]
                               tls: { certResolver: myresolver }

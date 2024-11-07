@@ -1,0 +1,11 @@
+services:
+  reverse-proxy:
+    image: traefik:latest
+    command: --api.insecure=true --providers.http.endpoint=http://127.0.0.1:9000/api # need an endpoint that provides the routes | --providers.file.directory=/etc/traefik/dynamic ⚠️ dynamic.yml contient un exemple de config dynamique
+    ports:
+      - "80:443"
+      - "8080:8080"
+    volumes:
+    - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    - ".letsencrypt:/letsencrypt"
+    - "./dynamic:/etc/traefik/dynamic"
