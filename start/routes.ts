@@ -24,7 +24,7 @@ router.get('/docs', async () => {
   return AutoSwagger.default.ui('/swagger', swagger)
 })
 
-router.post('/ping', [PingController, 'ping'])
+router.post('/ping', [PingController, 'postPing'])
 
 // Register routes
-router.get('/register', [RegistersController, 'get'])
+router.post('/register', [RegistersController, 'postRegister'])

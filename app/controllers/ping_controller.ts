@@ -5,15 +5,17 @@ import { DateTime } from 'luxon'
 
 export default class PingController {
   /**
-   * @ping
-   * @requestBody {"mac": "foo"}
+   * @postPing
+   * @operationId postPing
+   * @description Update raspberry last ping status
+   * @requestBody <macAddressValidator>
    */
-  async ping({ request, response }: HttpContext) {
+  async postPing({ request, response }: HttpContext) {
     const data = request.all()
     const payload = await macAddressValidator.validate(data)
     await Raspberry.query()
       .where('mac_address', payload.mac)
       .update({ last_ping_at: DateTime.now().toISO() })
-    response.status(200)
+    response.status(201)
   }
 }

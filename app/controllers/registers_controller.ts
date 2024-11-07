@@ -1,20 +1,16 @@
-// import type { HttpContext } from '@adonisjs/core/http'
-
 import { HttpContext } from '@adonisjs/core/http'
 import { registerRaspberryValidator } from '#validators/raspberry'
 
 export default class RegistersController {
   /**
-   * Either register a new Raspberry, or return the already assigned ports.
-   *
-   * @param request
+   * @postRegister
+   * @operationId postRegister
+   * @description Register the raspberry and returns a list of assigned ports
+   * @requestBody <registerRaspberryValidator>
    */
-  public async get({ request }: HttpContext) {
+  async postRegister({ request, response }: HttpContext) {
     const data = request.all()
     const payload = await registerRaspberryValidator.validate(data)
-
-    // 1 -
-
-    return payload
+    response.send(payload)
   }
 }

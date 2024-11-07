@@ -15,7 +15,7 @@ const macPrefixCheck = vine.createRule(async (value, _, field) => {
     (value as string).toLowerCase().startsWith(prefix.toLowerCase())
   )
   if (!startsWithPrefix) {
-    field.report(`Incorrect mac address`, 'startsWith', field)
+    field.report(`Incorrect mac address`, 'Invalid MAC', field)
   }
 })
 
