@@ -8,7 +8,7 @@ export default class extends BaseSchema {
       table.uuid('id').primary().notNullable()
       table.string('mac_address').notNullable()
       table.text('ssh_key').notNullable()
-      table.dateTime('last_ping_at')
+      table.timestamp('last_ping_at', { useTz: true })
       table.timestamp('created_at', { useTz: true }).notNullable()
       table.timestamp('updated_at', { useTz: true }).notNullable()
     })
