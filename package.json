@@ -61,7 +61,8 @@
     "better-sqlite3": "^11.5.0",
     "luxon": "^3.5.0",
     "mysql2": "^3.11.3",
-    "reflect-metadata": "^0.2.2"
+    "reflect-metadata": "^0.2.2",
+    "yaml": "^2.6.0"
   },
   "hotHook": {
     "boundaries": [
