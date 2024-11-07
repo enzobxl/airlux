@@ -16,6 +16,8 @@ export default class Setup extends BaseCommand {
   }
 
   async run() {
+    this.logger.info('[SETUP] Creating necessary database rows')
+
     let statuses: Array<string> = ['available', 'unavailable', 'stopped']
 
     for (const statusLabel of statuses) {
@@ -42,6 +44,8 @@ export default class Setup extends BaseCommand {
           portTypeId: null,
           raspberryId: null,
         })
+
+        this.logger.info(`[SETUP] Port ${i} created`)
       }
     }
 

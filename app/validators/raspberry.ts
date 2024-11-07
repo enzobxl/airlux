@@ -13,7 +13,8 @@ const userAgentCheck = vine.createRule(async (value, _, field) => {
 export const registerRaspberryValidator = vine.compile(
   vine.object({
     ...macAddress.getProperties(),
-    ports: vine.array(vine.string().minLength(1).maxLength(4).regex(/^\d+$/).trim()),
+    tcpPorts: vine.array(vine.string().minLength(1).maxLength(4).regex(/^\d+$/).trim()),
+    httpPorts: vine.array(vine.string().minLength(1).maxLength(4).regex(/^\d+$/).trim()),
     key: vine.string().trim(),
     userAgent: vine.string().use(userAgentCheck()).trim(),
   })
