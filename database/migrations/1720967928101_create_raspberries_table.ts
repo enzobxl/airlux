@@ -5,12 +5,12 @@ export default class extends BaseSchema {
 
   async up() {
     this.schema.createTable(this.tableName, (table) => {
-      table.uuid('id').primary()
-      table.string('mac_address')
-      table.string('ssh_key')
+      table.uuid('id').primary().notNullable()
+      table.string('mac_address').notNullable()
+      table.text('ssh_key').notNullable()
       table.dateTime('last_ping_at')
-      table.dateTime('created_at')
-      table.dateTime('updated_at')
+      table.timestamp('created_at', { useTz: true }).notNullable()
+      table.timestamp('updated_at', { useTz: true }).notNullable()
     })
   }
 
