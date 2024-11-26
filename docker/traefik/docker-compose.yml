@@ -1,9 +1,12 @@
 services:
   reverse-proxy:
     image: traefik:latest
+    networks:
+      - proxy
     command:
       - "--log.level=DEBUG"
       - "--log.filePath=/usr/traefik.log"
+      - "--api=true"
       - "--api.dashboard=true"
       
       - "--providers.docker.network=proxy"
@@ -13,7 +16,7 @@ services:
       - "--entryPoints.web.http.redirections.entrypoint.scheme=https"
       
       - "--entryPoints.websecure.address=:443"
-      - "--entrypoints.websecure.asDefault=true"
+      - "--entrypoints.websecure.http.tls=true"
       
       - --certificatesresolvers.myresolver.acme.email=quentin.beaufort@ynov.com
       - --certificatesresolvers.myresolver.acme.tlschallenge=true
@@ -26,9 +29,10 @@ services:
       - "/etc/letsencrypt/:/letsencrypt"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.mydashboard.rule=Host(`traefik.example.com`)"
-      - "traefik.http.routers.mydashboard.service=api@internal"
-      - "traefik.http.routers.mydashboard.middlewares=myauth"
+      - "traefik.http.routers.traefik.rule=Host(`airlux.m1-iot.ynov.cloud`) && (PathPrefix(`/api`) || PathPrefix(`/dashboard`))"
+      - "traefik.http.routers.traefik.service=api@internal"
+      - "traefik.http.routers.traefik.middlewares=myauth"
+      - "traefik.http.routers.traefik.entrypoints=websecure"
       - "traefik.http.middlewares.myauth.basicauth.users=test:$$apr1$$H6uskkkW$$IgXLP6ewTrSuBkTrqE8wj/"
   whoami:
     image: "traefik/whoami"
@@ -37,7 +41,7 @@ services:
       - "proxy"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.mywhoami.rule=Host(`whoami.example.com`) || Host(`www.whoami.example.com`)"
+      - "traefik.http.routers.mywhoami.rule=Host(`airlux.m1-iot.ynov.cloud`) || Host(`www.airlux.m1-iot.ynov.cloud`)"
       - "traefik.http.services.mywhoami.loadbalancer.server.port=80"
 networks:
   proxy:
