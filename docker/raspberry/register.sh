@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 HOST="hub.bzctoons.net"
 USER="register"
 API_REGISTER_ENDPOINT="http://$HOST/api/register"
@@ -15,7 +14,7 @@ echo "Local ports: $LOCAL_PORTS"
 IFS=',' read -ra LOCAL_PORTS <<< "$LOCAL_PORTS"
 
 # Get ports from API with the user agent and the mac address
-# REMOTE_PORTS=$(curl -X POST -d "mac=$MAC&ports=$LOCAL_PORTS" -A "AirNet/1.0" $API_REGISTER_ENDPOINT)
+REMOTE_PORTS=$(curl -X POST -d "mac=$MAC&ports=$LOCAL_PORTS" -A "AirNet/1.0" $API_REGISTER_ENDPOINT)
 
 echo "Getting ports from API: $API_REGISTER_ENDPOINT, mac=$MAC, ports=$LOCAL_PORTS"
 REMOTE_PORTS=8022,8080,8443,18327

@@ -1,9 +1,10 @@
 FROM debian:latest
 
-# Ajouter un utilisateur et définir son mot de passe
-RUN useradd register -p root
-
+# Create the directory for the 'register' user
 RUN mkdir -p /home/register
+
+# Create the 'register' user and its home directory
+RUN useradd -m register -p root
 
 # Copier le script register.sh dans l'image
 COPY ./register.sh /home/register/register.sh
