@@ -1,11 +1,47 @@
 services:
   reverse-proxy:
     image: traefik:latest
-    command: --api.insecure=true --providers.http.endpoint=http://127.0.0.1:9000/api # need an endpoint that provides the routes | --providers.file.directory=/etc/traefik/dynamic ⚠️ dynamic.yml contient un exemple de config dynamique
+    command:
+      - "--log.level=DEBUG"
+      - "--log.filePath=/usr/traefik.log"
+      - "--api.dashboard=true"
+      
+      - "--providers.docker.network=proxy"
+      - "--providers.docker.exposedByDefault=false"
+      - "--entryPoints.web.address=:80"
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entryPoints.web.http.redirections.entrypoint.scheme=https"
+      
+      - "--entryPoints.websecure.address=:443"
+      - "--entrypoints.websecure.asDefault=true"
+      
+      - --certificatesresolvers.myresolver.acme.email=quentin.beaufort@ynov.com
+      - --certificatesresolvers.myresolver.acme.tlschallenge=true
+      - --certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json
     ports:
-      - "80:443"
-      - "8080:8080"
+      - "80:80"
+      - "443:443"
     volumes:
-    - "/var/run/docker.sock:/var/run/docker.sock:ro"
-    - ".letsencrypt:/letsencrypt"
-    - "./dynamic:/etc/traefik/dynamic"
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "/etc/letsencrypt/:/letsencrypt"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.mydashboard.rule=Host(`traefik.example.com`)"
+      - "traefik.http.routers.mydashboard.service=api@internal"
+      - "traefik.http.routers.mydashboard.middlewares=myauth"
+      - "traefik.http.middlewares.myauth.basicauth.users=test:$$apr1$$H6uskkkW$$IgXLP6ewTrSuBkTrqE8wj/"
+  whoami:
+    image: "traefik/whoami"
+    container_name: "service-whoami"
+    networks:
+      - "proxy"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.mywhoami.rule=Host(`whoami.example.com`) || Host(`www.whoami.example.com`)"
+      - "traefik.http.services.mywhoami.loadbalancer.server.port=80"
+networks:
+  proxy:
+    name: proxy
+volumes:
+  letsencrypt:
+    name: letsencrypt

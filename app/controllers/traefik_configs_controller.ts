@@ -1,6 +1,6 @@
 // import type { HttpContext } from '@adonisjs/core/http'
 import Raspberry from '#models/raspberry'
-import YAML from 'yaml'
+// import YAML from 'yaml'
 
 interface RouterConfig {
     rule: string;
@@ -47,8 +47,8 @@ export default class TraefikConfigsController {
                 loadBalancer: `{servers : [{ url : 'http://box-${rasp.id}-${rasp.macAddress}.nomHote:80' }]}`
             }
         })
-        const response = new YAML.Document()
-        response.contents = YAML.parseDocument(YAML.stringify(traefik_config)).contents
-        return response
+        // const response = new YAML.Document()
+        // response.contents = YAML.parseDocument(YAML.stringify(traefik_config)).contents
+        return traefik_config
     }
 }
