@@ -6,8 +6,12 @@ RUN mkdir -p /home/register
 # Create the 'register' user and its home directory
 RUN useradd -m register -p root
 
+RUN apt-get update && apt-get install -y dos2unix
+
 # Copier le script register.sh dans l'image
 COPY ./register.sh /home/register/register.sh
+RUN dos2unix /home/register/register.sh
+
 
 RUN chmod +x /home/register/register.sh
 
