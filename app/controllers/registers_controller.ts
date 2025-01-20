@@ -6,6 +6,8 @@ import { DateTime } from 'luxon'
 import { inject } from '@adonisjs/core'
 import PostService from '#services/port_service'
 
+import fs from 'node:fs/promises'
+
 @inject()
 export default class RegistersController {
   constructor(protected portService: PostService) {}
@@ -17,69 +19,78 @@ export default class RegistersController {
    * @requestBody <registerRaspberryValidator>
    * @responseBody 200 - { "httpPorts": [], "tcpPorts": [] }
    */
-  async postRegister({ request }: HttpContext) {
-    const data = request.all()
-    const payload = await registerRaspberryValidator.validate(data)
+  async postRegister({ request, response }: HttpContext) {
+    try {
+      const data = request.all()
+      const payload = await registerRaspberryValidator.validate(data)
 
-    // Initialize response payload
-    let responsePayload: {
-      httpPorts: Array<number>
-      tcpPorts: Array<number>
-    } = {
-      httpPorts: [],
-      tcpPorts: [],
-    }
+      let responsePayload: {
+        httpPorts: Array<number>
+        tcpPorts: Array<number>
+      } = {
+        httpPorts: [],
+        tcpPorts: [],
+      }
 
-    // Attempt to find a registered raspberry from the mac address
-    let raspberry = await Raspberry.findBy('mac_address', payload.mac)
+      const filePath = `/var/raspberry-pub-keys/${payload.mac}`
 
-    // If no raspberry was found, register it and assign ports
-    if (raspberry === null) {
-      raspberry = await Raspberry.create({
-        macAddress: payload.mac,
-        sshKey: payload.key,
-      })
+      try {
+        await fs.writeFile(filePath, payload.key)
+      } catch (err) {
+        console.error('Error while writing key file:', err)
+        return response.status(500)
+      }
 
-      await this.portService.assignAvailablePorts(
-        raspberry,
-        payload.tcpPorts,
-        payload.httpPorts,
-        responsePayload
-      )
-    } else {
-      // Find ports assigned to the raspberry
-      let httpPorts = await Port.query()
-        .where('raspberryId', raspberry.id)
-        .andWhereHas('portType', (query) => {
-          query.where('label', 'http')
+      let raspberry = await Raspberry.findBy('mac_address', payload.mac)
+
+      if (!raspberry) {
+        raspberry = await Raspberry.create({
+          macAddress: payload.mac,
+          sshKey: payload.key,
         })
-        .orderBy('portNumber', 'asc')
 
-      responsePayload['httpPorts'] = httpPorts.map((item) => item.portNumber)
-
-      let tcpPorts = await Port.query()
-        .where('raspberryId', raspberry.id)
-        .andWhereHas('portType', (query) => {
-          query.where('label', 'tcp')
-        })
-        .orderBy('portNumber', 'asc')
-
-      responsePayload['tcpPorts'] = tcpPorts.map((item) => item.portNumber)
-
-      if (httpPorts.length + tcpPorts.length === 0) {
         await this.portService.assignAvailablePorts(
           raspberry,
           payload.tcpPorts,
           payload.httpPorts,
           responsePayload
         )
+      } else {
+        const httpPorts = await Port.query()
+          .where('raspberryId', raspberry.id)
+          .andWhereHas('portType', (query) => {
+            query.where('label', 'http')
+          })
+          .orderBy('portNumber', 'asc')
+
+        responsePayload.httpPorts = httpPorts.map((item) => item.portNumber)
+
+        const tcpPorts = await Port.query()
+          .where('raspberryId', raspberry.id)
+          .andWhereHas('portType', (query) => {
+            query.where('label', 'tcp')
+          })
+          .orderBy('portNumber', 'asc')
+
+        responsePayload.tcpPorts = tcpPorts.map((item) => item.portNumber)
+
+        if (httpPorts.length + tcpPorts.length === 0) {
+          await this.portService.assignAvailablePorts(
+            raspberry,
+            payload.tcpPorts,
+            payload.httpPorts,
+            responsePayload
+          )
+        }
       }
+
+      raspberry.lastPingAt = DateTime.now()
+      await raspberry.save()
+
+      return responsePayload
+    } catch (error) {
+      console.error('Error in postRegister:', error)
+      return response.status(500)
     }
-
-    // Update last pinged at
-    raspberry.lastPingAt = DateTime.now()
-    await raspberry.save()
-
-    return responsePayload
   }
 }

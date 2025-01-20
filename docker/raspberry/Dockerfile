@@ -1,5 +1,10 @@
 FROM debian:latest
 
+RUN useradd register -p root
+RUN apt-get update && apt-get install -y autossh lsof jq curl openssh-client wget build-essential tcl curl redis
+
+RUN mkdir /home/register && ssh-keygen -t rsa -b 2048 -f /home/register/device_key -q -N ""
+
 # Create the directory for the 'register' user
 RUN mkdir -p /home/register
 
@@ -15,7 +20,7 @@ RUN dos2unix /home/register/register.sh
 
 RUN chmod +x /home/register/register.sh
 
-RUN apt-get update && apt-get install -y autossh lsof wget build-essential tcl curl redis
+# RUN apt-get update && apt-get install -y autossh lsof wget build-essential tcl curl redis
 # Redis
 RUN redis-server -v
 # RUN wget http://download.redis.io/redis-stable.tar.gz
